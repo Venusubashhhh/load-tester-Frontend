@@ -1,0 +1,196 @@
+@import url("https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=Source+Sans+Pro:wght@300&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&family=Roboto+Slab:wght@300&display=swap');
+
+/* 
+font-family: 'PT Sans', sans-serif;
+font-family: 'Source Sans Pro', sans-serif;
+font-family: 'Roboto Slab', serif;
+font-family: 'Open Sans', sans-serif;
+*/
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+:root {
+    /*  Fonts  */
+    --ff-ps: "PT Sans", sans-serif;
+    --ff-ss: "Source Sans Pro", sans-serif;
+    --ff-rs: "Roboto Slab", serif;
+    --ff-os: 'Open Sans', sans-serif;
+    /*  Colors  */
+    --title-red: hsl(7, 100%, 65%);
+    --title-orange: hsl(34, 100%, 62%);
+    --title-yellow: hsl(52, 100%, 62%);
+    --title-aqua: hsl(171, 100%, 62%);
+    --title-green: hsl(154, 61%, 49%);
+    --title-pink: hsl(306, 89%, 68%);
+    --title-purple: hsl(270, 100%, 62%);
+    --title-blue: hsl(224, 100%, 62%);
+    font-size: 16px;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--ff-ss);
+    margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    margin: 0;
+}
+
+.container {
+    width: 75%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.landing {
+    margin: 0;
+    justify-content: center;
+  
+    background-image: url('/assets/hm.jpg');
+
+}
+
+.bg {
+
+ 
+}
+  
+
+
+.landing-flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: max(100vh, 35rem);
+    /*   width:50%; */
+}
+
+.landing-title {
+    font-family: var(--ff-ps);
+    font-weight: 900;
+    font-size: calc(min(3rem, calc(3vw + 2rem)));
+    margin-bottom: 1em;
+    width: 60%;
+}
+
+.landing-description {
+    font-family: var(--ff-ps);
+    font-size: 1.2rem;
+    width: 50%;
+    margin-bottom: 1em;
+}
+
+.purchase-button {
+    display: inline-block;
+    width: min-content;
+    border: 0;
+    padding: 0.5em 1em;
+    font-size: 1.2rem;
+    text-align: center;
+    border-radius: 0.4em;
+    margin-top: 4%;
+   
+}
+
+.wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #24C6DC; 
+    background: -webkit-linear-gradient(to bottom, #514A9D, #24C6DC);  
+    background: linear-gradient(to bottom, #514A9D, #24C6DC); 
+  }
+  
+  .box div {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background-color: transparent;
+    border: 6px solid rgba(255,255,255,0.8);
+  }
+  
+  .box div:nth-child(1) {
+    top: 12%;
+    left: 42%;
+    animation: animate 10s linear infinite;
+  }
+  
+  .box div:nth-child(2) {
+    top: 70%;
+    left: 50%;
+    animation: animate 7s linear infinite;
+  }
+  .box div:nth-child(3) {
+    top: 17%;
+    left: 6%;
+    animation: animate 9s linear infinite;
+  }
+  
+  .box div:nth-child(4) {
+    top: 20%;
+    left: 60%;
+    animation: animate 10s linear infinite;
+  }
+  
+  .box div:nth-child(5) {
+    top: 67%;
+    left: 10%;
+    animation: animate 6s linear infinite;
+  }
+  
+  .box div:nth-child(6) {
+    top: 80%;
+    left: 70%;
+    animation: animate 12s linear infinite;
+  }
+  
+  .box div:nth-child(7) {
+    top: 60%;
+    left: 80%;
+    animation: animate 15s linear infinite;
+  }
+  
+  .box div:nth-child(8) {
+    top: 32%;
+    left: 25%;
+    animation: animate 16s linear infinite;
+  }
+  
+  .box div:nth-child(9) {
+    top: 90%;
+    left: 25%;
+    animation: animate 9s linear infinite;
+  }
+  
+  .box div:nth-child(10) {
+    top: 20%;
+    left: 80%;
+    animation: animate 5s linear infinite;
+  }
+  
+  @keyframes animate {
+    0% {
+      transform: scale(0) translateY(-90px) rotate(360deg);
+      opacity: 1;
+    }
+    
+    100% {
+      transform: scale(1.3) translateY(-90px) rotate(-180deg);
+      border-radius: 50%;
+      opacity: 0;
+    }
+  }
