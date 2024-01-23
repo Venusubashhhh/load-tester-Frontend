@@ -24,10 +24,10 @@ function page() {
     <div className="bg"></div>
     <div className="container landing-flex">
       <h1 className="landing-title">
-        Load Generator and<br/>Load Tester.
+      Velocity Forge
       </h1>
       <div className="landing-description">
-     A load tester is a tool or software designed to simulate a specific amount of load or traffic on a system, application, or website to assess its performance and behavior under various conditions. The primary goal of load testing is to identify how a system handles different levels of stress, ensuring it can perform optimally even during peak usage.
+     Velocity Forge is a tool or software designed to simulate a specific amount of load or traffic on a system, application, or website to assess its performance and behavior under various conditions. The primary goal of load testing is to identify how a system handles different levels of stress, ensuring it can perform optimally even during peak usage.
       </div>
       <button className="purchase-button" onClick={()=>router.push('/home')}>
         Purchase

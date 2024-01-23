@@ -1,112 +1,149 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import "./Home.scss";
-import ApiSelectComponent from "../../components/ApiSelectComponent";
-import DurationSelectComponent from "../../components/DurationSelectComponent";
-import InputField from "../../components/InputField";
-import { useRecoilState } from "recoil";
-import data from "../../atom/data.atom"; // Adjust the import path and atom name
 import { Charts } from "../../components/chart/Charts";
 import TextField from "@mui/material/TextField";
 import FormLabel from "@mui/material/FormLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import CircularProgress from '@mui/material/CircularProgress';
+import CircularProgress from "@mui/material/CircularProgress";
 import TestService from "@/services/TestService";
+import { io, Socket } from "socket.io-client";
 import { ToastContainer, toast, ToastOptions } from "react-toastify";
+
 import "react-toastify/dist/ReactToastify.css";
+import { BACKEND_API } from "@/Constants";
+import { LTTB } from "downsample";
 interface IFormData {
   testName: string;
   requestsPer: number;
   unit: "second" | "minute";
   totalRequests: number;
-  api:string;
+  api: string;
+  ram:number;
+  time:number;
 }
 
-function Page() {
+const duration = [
+  {
+    value: "minute",
+    label: "Minute",
+  },
+  {
+    value: "second",
+    label: "Second",
+  },
+];
 
+const socket: Socket = io(BACKEND_API);
+socket.connect();
+
+function Page() {
   const [formdata, setFormData] = useState<IFormData>({
     requestsPer: 0,
     testName: "",
     totalRequests: 0,
     unit: "second",
-    api:"",
+    api: "",
+    ram:0,
+    time:0,
   });
-const[loading,setloading]=useState(false)
-const[average,setAverage]=useState(0);
-const[failedNo,setFailedNo]=useState(0);
-const[successRate,setSuccessRate]=useState(0);
-const [graphData, setGraphData] = useState({ x: [], y: [] });
-const avg=()=>{
-const total = graphData.y.reduce((accumulator, currentValue) => {
-  return accumulator + currentValue;
-}, 0);
 
-const avrg=total/formdata.totalRequests;
-console.log(avrg)
-setAverage(avrg);
-let fail = 0;
-graphData.y.map((item) => {
-  if (item === 0) {
-    fail += 1;
+  function sendMessage() {
+    socket.emit("form-data", { formdata });
   }
-});
-setFailedNo(fail);
-const success=100-((total/total-fail)*100)??100
-console.log(success)
-setSuccessRate(success)
-} 
 
+  const [loading, setloading] = useState(false);
+  const [average, setAverage] = useState(0);
+  const [failedNo, setFailedNo] = useState(0);
+  const [successRate, setSuccessRate] = useState(0);
+  const [graphData, setGraphData] = useState({
+    x: [] as any[],
+    y: [] as any[],
+  });
+  const [downsampledData, setDownsampledData] = useState({
+    x: [] as any[],
+    y: [] as any[],
+  });
 
   useEffect(() => {
-    console.log({ formdata });
-  }, [formdata]);
-useEffect(()=>{console.log({graphData})},[graphData])
-  const duration = [
-    {
-      value: "minute",
-      label: "Minute",
-    },
-    {
-      value: "second", 
-      label: "Second",
-    },
-  ];
-  const showToastMessage = () => {
-    toast.error("Please enter the valid API !", {
-  
+    socket.on("data", (data: any) => {
+
+      setloading(false);
+
+      if (data.data.length && data.data.length > 0) {
+        setGraphData((prev) => ({
+          x: [...(prev.x as any[]), ...data.data.map((item: any) => item.index)],
+          y: [
+            ...(prev.y as any[]),
+            ...data.data.map((item: any) => (item.reason ? 0 : item.responseTime)),
+          ],
+        }));
+      }
+
     });
-  };
-  const sendRequest = async () => {
-    setloading(true);
-    const data:any = await TestService.Test(formdata);
-    setloading(false);
-    console.log(data)
-    if(data[0]==null)
-    {
-    showToastMessage()
-    console.log('hii');
+  }, [socket]);
+
+  useEffect(() => {
+    if (graphData.x.length > 0) {
+      const downsample = LTTB(
+        [
+          ...graphData.x.map((item: any, index) => ({
+            x: item,
+            y: graphData.y[index],
+          })),
+        ],
+        200
+      );
+      console.log(graphData);
+      setDownsampledData({
+        x: (downsample as any).map((item: any) => item.x),
+        y: (downsample as any).map((item: any) => item.y),
+      });
     }
-  else{
-    console.log('bye')
- 
-    setGraphData({
-      x: data.map((item:any) => item.index),
-      y: data.map((item:any) =>{ 
-        if(item?.reason)
-        return 0;
-        else
-        return item.responseTime}),
-    });
-   
-  }
-  };
-
-  useEffect(() => {
     avg();
   }, [graphData]);
-  
+
+  const avg = () => {
+    const total = graphData?.y.reduce((accumulator, currentValue) => {
+      return accumulator + currentValue;
+    }, 0);
+
+    const avrg = total / graphData?.y.length;
+    setAverage(avrg);
+    let fail = 0;
+    graphData.y.map((item) => {
+      if (item === 0) {
+        fail += 1;
+      }
+    });
+    setFailedNo(fail);
+
+    const success = (fail / graphData?.y.length) * 100;
+
+    setSuccessRate(success);
+  };
+
+  const showToastMessage = () => {
+    toast.error("Please enter the valid API !", {});
+  };
+
+  const sendRequest = async () => {
+    setGraphData({
+      x: [],
+      y: []
+    });
+    setDownsampledData({
+      x: [],
+      y: []
+    })
+    setloading(true);
+    sendMessage();
+
+    await TestService.Test(formdata);
+  };
+
   return (
     <div className="wrapper">
       <div className="box">
@@ -124,7 +161,7 @@ useEffect(()=>{console.log({graphData})},[graphData])
 
       <div className="home-wrapper">
         <div className="container">
-          <h3>Test the Load</h3>
+        
           <div className="form-wrapper">
             <div className="input__box">
               <FormLabel>Test Name</FormLabel>
@@ -204,26 +241,69 @@ useEffect(()=>{console.log({graphData})},[graphData])
                 />
               </div>
             </div>
+            <div className="input__box">
+              <FormLabel>RAM</FormLabel>
+              <FormLabel sx={{marginLeft:'41%'}}>Request Timemout(max)</FormLabel>
+              <div className="request-wrapper">
+                <OutlinedInput
+                  placeholder="Enter number of requests"
+                  sx={{ height: "50%", width: "50%" }}
+                  value={formdata.ram}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formdata,
+                      ram: Number(e.target.value),
+                    })
+                  }
+                />
+                
+            <OutlinedInput
+                  placeholder="Enter number of requests"
+                  sx={{  width: "50%" }}
+                  value={formdata.time}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formdata,
+                      time: Number(e.target.value),
+                    })
+                  }
+                />
+              </div>
+            </div>
             <div className="button-container">
               <Button variant="contained" onClick={sendRequest}>
                 Test
               </Button>
-         
             </div>
           </div>
         </div>
         <div className="container-1">
-          {loading ?
-        <div className="loading-wrapper"><CircularProgress /></div>:<><Charts data={graphData}/>
-        <div className="average-wrapper">
-          <p>Average Latency:{average} ms</p>
-          <p>Total no of Request Failed:{failedNo}</p>
-          <p>Failure Rate:{successRate}%</p>
-        </div>
-        </>
-        }
-        
-        <ToastContainer />
+          <h1>Statistical data</h1>
+          {loading ? (
+            <div className="loading-wrapper">
+              <CircularProgress />
+            </div>
+          ) : (
+            <>
+              <div
+                style={{
+                  width: "100%",
+                  overflowX: "auto",
+                }}
+              >
+                {downsampledData && <Charts data={downsampledData} />}
+              </div>
+              <div className="average-wrapper">
+                <p className="text"><b>Average Latency:{average} ms</b></p>
+                <p className="text"><b>Total no of Request Failed:{failedNo}</b></p>
+                <p className="text"><b>Failure Rate:{successRate}%</b></p>
+              </div>
+              <div className="dashboardlink-wrapper">
+               <a>Click here to view the dashboard</a>
+              </div>
+            </>
+          )}
+          <ToastContainer />
         </div>
       </div>
     </div>

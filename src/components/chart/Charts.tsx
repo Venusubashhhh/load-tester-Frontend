@@ -1,5 +1,6 @@
-"use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { Line, Chart } from "react-chartjs-2";
+import "chartjs-adapter-moment";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,9 +12,6 @@ import {
   TimeScale,
   Legend,
 } from "chart.js";
-import { Line } from "react-chartjs-2";
-import Moment from 'moment';
-import 'chartjs-adapter-moment';
 
 ChartJS.register(
   CategoryScale,
@@ -25,32 +23,36 @@ ChartJS.register(
   Tooltip
 );
 
-interface ChartProps {
+interface ChartProp {
   data: {
     x: Date[];
     y: number[];
   };
 }
 
-export function Charts({ data }: ChartProps) {
-  console.log(data);
+export function Charts({ data }: ChartProp) {
   const datavalue = {
     labels: data.x,
     datasets: [
       {
+        borderWidth: 0.5,
         label: "Latency",
         data: data.y,
-        borderColor: "red",
-        backgroundColor: "red",
+        borderColor: "green",
+        backgroundColor: "green",
         yAxisID: "y",
-        pointStyle: data.y.map((value) => (value === 0 ? "crossRot" : "circle")),
-        pointRadius: data.y.map((value) => (value === 0 ? 5 : 3)),
+        pointStyle: data.y.map((value) =>
+          value === 0 ? "crossRot" : "circle"
+        ),
+        pointRadius: data.y.map((value) => (value === 0 ? 3 : 0)),
         pointBorderColor: data.y.map((value) => (value === 0 ? "red" : "")),
+        tension: 0.3,
       },
     ],
   };
 
   const options = {
+    maintainAspectRatio: false,
     responsive: true,
     stacked: false,
     plugins: {
@@ -60,6 +62,13 @@ export function Charts({ data }: ChartProps) {
       title: {
         display: true,
         text: "Latency Graph",
+      },
+      responsiveDownsample: {
+        enabled: true,
+        aggregationAlgorithm: "LTTB",
+        desiredDataPointDistance: 1,
+        minNumPoints: 100,
+        cullData: true,
       },
     },
     scales: {
@@ -81,5 +90,10 @@ export function Charts({ data }: ChartProps) {
     },
   };
 
-  return <Line options={options} data={datavalue} />;
+  return (
+    <Line
+      options={options}
+      data={datavalue}
+    />
+  );
 }
